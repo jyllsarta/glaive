@@ -1,0 +1,4 @@
+# healthplanet client id
+HEALTHPLANET_CLIENT_ID=8888.XXXXXXXX.apps.healthplanet.jp
+# which metrics to get
+HEALTHPLANET_AUTH_SCOPE=innerscan
