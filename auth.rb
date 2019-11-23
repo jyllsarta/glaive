@@ -6,8 +6,9 @@ class GlaiveAuthenticator
     print "Authorization Code:"
     auth_code = gets.chomp
     raise "code is blank" if auth_code == ""
-    self.write(auth_code)
-    puts "All done! wrote your auth code (#{auth_code}) to .credential."
+    access_token = self.post_auth_code(auth_code)
+    self.write(access_token)
+    puts "All done! wrote your access token (#{access_token}) to .credential."
   end
 
   def self.hello_message
@@ -28,10 +29,17 @@ EOS
     "https://www.healthplanet.jp/oauth/auth?client_id=#{ENV["HEALTHPLANET_CLIENT_ID"]}&response_type=code&redirect_uri=http://localhost&scope=#{ENV["HEALTHPLANET_AUTH_SCOPE"]}"
   end
 
-  def self.write(auth_code)
+  def self.write(access_token)
     file = File.open(".credential", "w")
-    file.write(auth_code)
+    file.write(access_token)
     file.close
+  end
+
+  def self.post_auth_code(auth_code)
+    # POST なのにquery stringで送らないといけないの解せない設計ですよねこれ...
+    uri = URI.parse("https://www.healthplanet.jp/oauth/token?client_id=#{ENV["HEALTHPLANET_CLIENT_ID"]}&client_secret=#{ENV["HEALTHPLANET_CLIENT_SECRET"]}&redirect_uri=localhost&code=#{auth_code}&grant_type=authorization_code")
+    response = Net::HTTP.post(uri, "")
+    JSON.parse(response.body)["access_token"] #TODO: refresh_token を使ってaccess tokenを入れ直す
   end
 
   auth if __FILE__ == $0
